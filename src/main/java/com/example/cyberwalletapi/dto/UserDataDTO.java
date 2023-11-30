@@ -9,7 +9,7 @@ public class UserDataDTO {
 
     private String name;
     private String email;
-//    private String address;
+    private String address;
 //    private Double balance;
 //    private Enum<Roles>role;
 }
