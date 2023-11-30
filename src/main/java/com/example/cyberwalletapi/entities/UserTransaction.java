@@ -1,6 +1,8 @@
 package com.example.cyberwalletapi.entities;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -17,7 +19,7 @@ public class UserTransaction {
     private Double amount;
 
     @Column(name = "DateOfTransaction")
-    private Date dateOfTransaction;
+    private LocalDateTime dateOfTransaction;
     private String description;
 
     @ManyToOne

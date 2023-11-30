@@ -1,5 +1,6 @@
 package com.example.cyberwalletapi.entities;
 
+import com.example.cyberwalletapi.enums.Roles;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.Date;
@@ -18,7 +19,7 @@ public class User {
     private String email;
     private String password;
     private String address;
-    private String role;
+    private Enum<Roles> role;
     private Double balance;
 
     @Column(name = "DateOfRegister")

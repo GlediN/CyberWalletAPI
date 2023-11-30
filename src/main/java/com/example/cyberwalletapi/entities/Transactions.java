@@ -14,7 +14,7 @@ import java.util.Date;
 public class Transactions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     @ManyToOne
     @JoinColumn(name = "UserTransactionID", nullable = false)
     private UserTransaction userTransaction;
