@@ -17,19 +17,17 @@ import java.time.LocalDateTime;
 @Getter
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
-
     private String name;
+    @Column(unique = true)
     private String email;
     private String password;
     private String address;
     private Enum<Roles> role;
-    private Double balance;
 
+    private Double balance;
     @Column(name = "DateOfRegister")
     private LocalDateTime dateOfRegister;
-
     public void setPassword(String password) {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         this.password = passwordEncoder.encode(password);

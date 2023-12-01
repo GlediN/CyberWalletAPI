@@ -1,6 +1,5 @@
 package com.example.cyberwalletapi.jwt;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -23,13 +21,12 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
     final CustomerUserDetailsService customerUserDetailsService;
     final JwtFilter jwtFilter;
-
     @Bean
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 
         http.cors(withDefaults()).csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authz) ->
-                        authz.requestMatchers("/login", "/signup","/category/get","/product/get", "/product/most-sold-products","/checkout","/orders/save")
+                        authz.requestMatchers("/login", "/signup")
                                 .permitAll().anyRequest().authenticated())
                 .exceptionHandling((ex) -> ex.accessDeniedHandler(null))
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

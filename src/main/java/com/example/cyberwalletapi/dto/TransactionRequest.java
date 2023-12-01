@@ -1,5 +1,6 @@
 package com.example.cyberwalletapi.dto;
 
+import com.example.cyberwalletapi.entities.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,8 @@ public class TransactionRequest {
     private Double amount;
     private LocalDateTime dateOfTransaction;
     private String description;
+    private String email;
+    private User userBalance;
 
 
 

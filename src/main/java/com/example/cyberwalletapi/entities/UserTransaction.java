@@ -13,7 +13,7 @@ import java.util.Date;
 public class UserTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private String recipient;
     private Double amount;

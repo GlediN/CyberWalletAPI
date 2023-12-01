@@ -9,31 +9,26 @@ import com.example.cyberwalletapi.jwt.CustomerUserDetailsService;
 import com.example.cyberwalletapi.jwt.JwtUtil;
 import com.example.cyberwalletapi.repositories.UserDAO;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
-
+@Service
+@RequiredArgsConstructor
 public class UserService {
      private final UserDAO userDao;
     private final CustomerUserDetailsService customerUsersDetailsService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder bcryptPasswordEncoder;
-
-    public UserService(UserDAO userDao, CustomerUserDetailsService customerUsersDetailsService, AuthenticationManager authenticationManager, JwtUtil jwtUtil, PasswordEncoder bcryptPasswordEncoder) {
-        this.userDao = userDao;
-        this.customerUsersDetailsService = customerUsersDetailsService;
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.bcryptPasswordEncoder = bcryptPasswordEncoder;
-    }
 
     public ResponseEntity<String> signUp(SignUpRequest signUpRequest) {
         try {
@@ -111,6 +106,7 @@ public class UserService {
         user.setEmail(signUpRequest.getEmail());
         user.setAddress(signUpRequest.getAddress());
         user.setRole(Roles.USER);
+        user.setBalance((double) 0);
         return user;
     }
 }
