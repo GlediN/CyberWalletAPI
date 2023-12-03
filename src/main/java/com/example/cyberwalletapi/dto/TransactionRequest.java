@@ -12,11 +12,6 @@ import java.util.Date;
 public class TransactionRequest {
     private String recipient;
     private Double amount;
-    private LocalDateTime dateOfTransaction;
     private String description;
     private String email;
-    private User userBalance;
-
-
-
 }

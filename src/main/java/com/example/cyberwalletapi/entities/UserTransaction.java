@@ -3,7 +3,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "UserTransaction")
@@ -11,20 +10,18 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserTransaction {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
     private String recipient;
     private Double amount;
-
-    @Column(name = "DateOfTransaction")
     private LocalDateTime dateOfTransaction;
     private String description;
-
     @ManyToOne
-    @JoinColumn(name = "UserID", nullable = false)
-    private User user;
+    @JoinColumn(name = "userID", nullable = false)
+    private User userID;
+
 }
 
 
