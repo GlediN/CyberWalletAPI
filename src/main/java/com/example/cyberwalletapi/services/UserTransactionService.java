@@ -29,6 +29,7 @@ public class UserTransactionService {
     private Jwt authenticationToken;
     private final String secret = System.getenv("SECRET_KEY_FINALPROJECT");
     private static final Logger logger = LoggerFactory.getLogger(UserTransactionService.class);
+
     public ResponseEntity<String> userTransaction(TransactionRequest transactionRequest, String authorizationHeader) {
         try {
             // Extract token from Authorization header
@@ -39,9 +40,17 @@ public class UserTransactionService {
 
             // Check if the subject claim matches the email in the TransactionRequest
             if (claims != null && claims.getSubject().equals(transactionRequest.getEmail())) {
-                UserTransaction userTransaction = userTransactionDAO.findByEmailId(transactionRequest.getEmail());
-                userTransactionDAO.save(getTransactionFromTransactionRequest(transactionRequest));
-                return HelpfulUtils.getResponseEntity("Transaction completed successfully", HttpStatus.OK);
+//                if (selectBalance(transactionRequest)) {
+//                    if (updateBalance(transactionRequest)) {
+                        User userTransaction = userTransactionDAO.findByEmailId(transactionRequest.getEmail());
+                        userTransactionDAO.save(getTransactionFromTransactionRequest(transactionRequest));
+                        return HelpfulUtils.getResponseEntity("Transaction completed successfully", HttpStatus.OK);
+//                    }else {
+//                        return HelpfulUtils.getResponseEntity("Balance is not enough",HttpStatus.BAD_REQUEST);
+//                    }
+//                }else {
+//                    return HelpfulUtils.getResponseEntity("User Transaction Is Empty",HttpStatus.BAD_REQUEST);
+//                }
             } else {
                 return HelpfulUtils.getResponseEntity("Unauthorized", HttpStatus.UNAUTHORIZED);
             }
@@ -68,22 +77,23 @@ public class UserTransactionService {
         }
     }
 
-    public ResponseEntity<UserDataDTO> getUserFromEmail(String email){
-        try{
+    public ResponseEntity<UserDataDTO> getUserFromEmail(String email) {
+        try {
             User user = (userDAO.findByEmailId(email));
             UserDataDTO userDataDTO = new UserDataDTO();
             userDataDTO.setEmail(user.getEmail());
             userDataDTO.setAddress(user.getAddress());
             userDataDTO.setName(user.getName());
             userDataDTO.setBalance(user.getBalance());
-            return new ResponseEntity<>(userDataDTO,HttpStatus.OK);
-        }catch (Exception e){
+            return new ResponseEntity<>(userDataDTO, HttpStatus.OK);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
     private UserTransaction getTransactionFromTransactionRequest(TransactionRequest transactionRequest) {
-        UserTransaction userTransaction =new UserTransaction();
+        UserTransaction userTransaction = new UserTransaction();
         userTransaction.setId(String.valueOf(UUID.randomUUID()));
         userTransaction.setDateOfTransaction(LocalDateTime.now());
         userTransaction.setAmount(transactionRequest.getAmount());
@@ -93,11 +103,29 @@ public class UserTransactionService {
 
         if (user != null) {
             userTransaction.setUserID(user);
-            System.out.println(userTransaction.getUserID());
         } else {
             throw new RuntimeException("Something wrong with getTransactionFromTransactionRequest method");
         }
         return userTransaction;
-    }}
+    }
+
+    private boolean selectBalance(TransactionRequest transactionRequest) {
+        if (transactionRequest != null) {
+            Double user = userDAO.selectUserBalance(transactionRequest.getEmail());
+
+        }
+        return false;
+    }
+
+    private boolean updateBalance(TransactionRequest transactionRequest) {
+        if (transactionRequest != null) {
+            Double user = userDAO.selectUserBalance(transactionRequest.getEmail());
+            if (user >= transactionRequest.getAmount()) {
+                userDAO.updateBalanceByEmail(transactionRequest.getAmount(), transactionRequest.getEmail());
+            }
+        }
+        return false;
+    }
+}
 
 

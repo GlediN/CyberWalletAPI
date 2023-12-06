@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface UserTransactionDAO extends JpaRepository<UserTransaction,Integer> {
-    @Query("select u from UserTransaction u where u.userID.email=:email")
-    UserTransaction findByEmailId(@Param("email") String email);
+    @Query("select u from User u where u.email=:email")
+    User findByEmailId(@Param("email") String email);
 }
