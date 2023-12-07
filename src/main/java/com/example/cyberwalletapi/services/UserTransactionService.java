@@ -34,23 +34,16 @@ public class UserTransactionService {
         try {
             // Extract token from Authorization header
             String token = extractToken(authorizationHeader);
-
             // Validate and parse the token
             Claims claims = validateAndParseToken(token);
-
             // Check if the subject claim matches the email in the TransactionRequest
             if (claims != null && claims.getSubject().equals(transactionRequest.getEmail())) {
-//                if (selectBalance(transactionRequest)) {
-//                    if (updateBalance(transactionRequest)) {
-                        User userTransaction = userTransactionDAO.findByEmailId(transactionRequest.getEmail());
-                        userTransactionDAO.save(getTransactionFromTransactionRequest(transactionRequest));
-                        return HelpfulUtils.getResponseEntity("Transaction completed successfully", HttpStatus.OK);
-//                    }else {
-//                        return HelpfulUtils.getResponseEntity("Balance is not enough",HttpStatus.BAD_REQUEST);
-//                    }
-//                }else {
-//                    return HelpfulUtils.getResponseEntity("User Transaction Is Empty",HttpStatus.BAD_REQUEST);
-//                }
+                User userTransaction = userTransactionDAO.findByEmailId(transactionRequest.getEmail());
+                if (selectBalance(transactionRequest)) {
+                    userTransactionDAO.save(getTransactionFromTransactionRequest(transactionRequest));
+                    updateBalance(transactionRequest);
+                }
+                return HelpfulUtils.getResponseEntity("Transaction Saved", HttpStatus.OK);
             } else {
                 return HelpfulUtils.getResponseEntity("Unauthorized", HttpStatus.UNAUTHORIZED);
             }
@@ -112,20 +105,14 @@ public class UserTransactionService {
     private boolean selectBalance(TransactionRequest transactionRequest) {
         if (transactionRequest != null) {
             Double user = userDAO.selectUserBalance(transactionRequest.getEmail());
-
+            return user >= transactionRequest.getAmount();
         }
         return false;
     }
 
-    private boolean updateBalance(TransactionRequest transactionRequest) {
-        if (transactionRequest != null) {
-            Double user = userDAO.selectUserBalance(transactionRequest.getEmail());
-            if (user >= transactionRequest.getAmount()) {
-                userDAO.updateBalanceByEmail(transactionRequest.getAmount(), transactionRequest.getEmail());
-            }
-        }
-        return false;
-    }
-}
+    private void updateBalance(TransactionRequest transactionRequest) {
+        userDAO.updateBalanceByEmail(transactionRequest.getAmount(), transactionRequest.getEmail());
+
+    }}
 
 
