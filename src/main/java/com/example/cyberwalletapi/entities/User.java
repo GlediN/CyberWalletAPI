@@ -25,7 +25,8 @@ public class User {
     private String email;
     private String password;
     private String address;
-    private Enum<Roles> role;
+    @Enumerated(EnumType.STRING)
+    private Roles role;
     private Double balance;
     @Column(name = "DateOfRegister")
     private LocalDateTime dateOfRegister;
