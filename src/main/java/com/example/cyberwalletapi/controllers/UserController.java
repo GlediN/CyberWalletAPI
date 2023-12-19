@@ -3,6 +3,7 @@ package com.example.cyberwalletapi.controllers;
 import com.example.cyberwalletapi.dto.FindTransactionsDTO;
 import com.example.cyberwalletapi.dto.LoginRequest;
 import com.example.cyberwalletapi.dto.SignUpRequest;
+import com.example.cyberwalletapi.dto.TransactionResponseDTO;
 import com.example.cyberwalletapi.services.UserService;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
 import lombok.RequiredArgsConstructor;
@@ -47,12 +48,13 @@ public class UserController {
         return HelpfulUtils.getResponseEntity(HelpfulUtils.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @PostMapping(path = "/getRecentTransactions")
-    public ResponseEntity<String>recentTransactions(@RequestBody FindTransactionsDTO findTransactionsDTO){
+    public ResponseEntity<TransactionResponseDTO> recentTransactions(@RequestBody FindTransactionsDTO findTransactionsDTO){
         try {
             return userService.getRecentOrders(findTransactionsDTO);
         }catch (Exception e){
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity(HelpfulUtils.UNAUTHORIZED_ACCESS,HttpStatus.FORBIDDEN);
+//        return HelpfulUtils.getResponseEntity(HelpfulUtils.UNAUTHORIZED_ACCESS,HttpStatus.FORBIDDEN);
+        return null;
     }
 }

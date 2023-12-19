@@ -1,5 +1,6 @@
 package com.example.cyberwalletapi.utils;
 
+import com.example.cyberwalletapi.dto.TransactionResponseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,6 +24,9 @@ public class HelpfulUtils {
     }
     public static ResponseEntity<String> getResponseEntity(String responseMessage, HttpStatus httpStatus){
         return new ResponseEntity<String>("{\"message\":\""+responseMessage+"\"}", httpStatus);
+    }
+    public static ResponseEntity<TransactionResponseDTO> getResponseEntity1(TransactionResponseDTO responseMessage, HttpStatus httpStatus){
+        return new ResponseEntity<TransactionResponseDTO>(responseMessage, httpStatus);
     }
 
 }

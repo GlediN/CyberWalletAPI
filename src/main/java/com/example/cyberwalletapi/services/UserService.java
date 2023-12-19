@@ -116,38 +116,39 @@ public class UserService {
         return user;
     }
 
-public ResponseEntity<String> getRecentOrders(FindTransactionsDTO findTransactionsDTO) {
+public ResponseEntity<TransactionResponseDTO> getRecentOrders(FindTransactionsDTO findTransactionsDTO) {
+    TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
     try {
         User user= userDao.findByEmailId(findTransactionsDTO.getEmail());
         List<UserTransaction> userTransactions = userDao.getLatestTransactions(user.getId());
-        TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
+
         if (userTransactions != null && !userTransactions.isEmpty()) {
             StringBuilder responseMessageBuilder = new StringBuilder("Recent transactions:\n");
             for (UserTransaction userTransaction : userTransactions) {
                 transactionResponseDTO.setDescription(userTransaction.getDescription());
-                transactionResponseDTO.setAmount(userTransaction.getAmount());
+                transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
                 transactionResponseDTO.setRecipient(userTransaction.getRecipient());
                 transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
                 transactionResponseDTO.setId(userTransaction.getId());
 
 
                 // Append each transaction details to the response message
-                responseMessageBuilder.append("Transaction ID: ").append(transactionResponseDTO.getId())
-                        .append(", Description: ").append(transactionResponseDTO.getDescription())
-                        .append(", Amount: ").append(transactionResponseDTO.getAmount())
-                        .append(", Recipient: ").append(transactionResponseDTO.getRecipient())
-                        .append(", Date: ").append(transactionResponseDTO.getDateOfTransaction())
-                        .append("\n");
+//                responseMessageBuilder.append("Transaction ID: ").append(transactionResponseDTO.getId())
+//                        .append(", Description: ").append(transactionResponseDTO.getDescription())
+//                        .append(", Amount: ").append(transactionResponseDTO.getAmount())
+//                        .append(", Recipient: ").append(transactionResponseDTO.getRecipient())
+//                        .append(", Date: ").append(transactionResponseDTO.getDateOfTransaction())
+//                        .append("\n");
             }
 
-            return new ResponseEntity<>(responseMessageBuilder.toString(), HttpStatus.OK);
+            return new ResponseEntity<>(transactionResponseDTO, HttpStatus.OK);
         } else {
-            return HelpfulUtils.getResponseEntity("No recent transactions found ", HttpStatus.BAD_REQUEST);
+            return HelpfulUtils.getResponseEntity1(transactionResponseDTO, HttpStatus.BAD_REQUEST);
         }
     } catch (Exception e) {
         e.printStackTrace();
     }
-    return HelpfulUtils.getResponseEntity("You are not logged in", HttpStatus.BAD_REQUEST);
+    return HelpfulUtils.getResponseEntity1(transactionResponseDTO, HttpStatus.BAD_REQUEST);
 }
 
     private String extractToken(String authorizationHeader) {
