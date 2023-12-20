@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin
@@ -48,7 +50,7 @@ public class UserController {
         return HelpfulUtils.getResponseEntity(HelpfulUtils.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @PostMapping(path = "/getRecentTransactions")
-    public ResponseEntity<TransactionResponseDTO> recentTransactions(@RequestBody FindTransactionsDTO findTransactionsDTO){
+    public ResponseEntity<List<TransactionResponseDTO>> recentTransactions(@RequestBody FindTransactionsDTO findTransactionsDTO){
         try {
             return userService.getRecentOrders(findTransactionsDTO);
         }catch (Exception e){

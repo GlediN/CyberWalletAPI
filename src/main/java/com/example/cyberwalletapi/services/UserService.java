@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -116,40 +117,34 @@ public class UserService {
         return user;
     }
 
-public ResponseEntity<TransactionResponseDTO> getRecentOrders(FindTransactionsDTO findTransactionsDTO) {
-    TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
-    try {
-        User user= userDao.findByEmailId(findTransactionsDTO.getEmail());
-        List<UserTransaction> userTransactions = userDao.getLatestTransactions(user.getId());
+    public ResponseEntity<List<TransactionResponseDTO>> getRecentOrders(FindTransactionsDTO findTransactionsDTO) {
+        List<TransactionResponseDTO> transactionResponseDTOList = new ArrayList<>();
+        try {
+            User user = userDao.findByEmailId(findTransactionsDTO.getEmail());
+            List<UserTransaction> userTransactions = userDao.getLatestTransactions(user.getId());
 
-        if (userTransactions != null && !userTransactions.isEmpty()) {
-            StringBuilder responseMessageBuilder = new StringBuilder("Recent transactions:\n");
-            for (UserTransaction userTransaction : userTransactions) {
-                transactionResponseDTO.setDescription(userTransaction.getDescription());
-                transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
-                transactionResponseDTO.setRecipient(userTransaction.getRecipient());
-                transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
-                transactionResponseDTO.setId(userTransaction.getId());
+            if (userTransactions != null && !userTransactions.isEmpty()) {
+                for (UserTransaction userTransaction : userTransactions) {
+                    TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
+                    transactionResponseDTO.setDescription(userTransaction.getDescription());
+                    transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
+                    transactionResponseDTO.setRecipient(userTransaction.getRecipient());
+                    transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
+                    transactionResponseDTO.setId(userTransaction.getId());
 
+                    transactionResponseDTOList.add(transactionResponseDTO);
+                }
 
-                // Append each transaction details to the response message
-//                responseMessageBuilder.append("Transaction ID: ").append(transactionResponseDTO.getId())
-//                        .append(", Description: ").append(transactionResponseDTO.getDescription())
-//                        .append(", Amount: ").append(transactionResponseDTO.getAmount())
-//                        .append(", Recipient: ").append(transactionResponseDTO.getRecipient())
-//                        .append(", Date: ").append(transactionResponseDTO.getDateOfTransaction())
-//                        .append("\n");
+                return new ResponseEntity<>(transactionResponseDTOList, HttpStatus.OK);
+            } else {
+                return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
             }
-
-            return new ResponseEntity<>(transactionResponseDTO, HttpStatus.OK);
-        } else {
-            return HelpfulUtils.getResponseEntity1(transactionResponseDTO, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        e.printStackTrace();
+        return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
     }
-    return HelpfulUtils.getResponseEntity1(transactionResponseDTO, HttpStatus.BAD_REQUEST);
-}
+
 
     private String extractToken(String authorizationHeader) {
         // Extract Bearer token from Authorization header
