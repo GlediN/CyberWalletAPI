@@ -144,6 +144,16 @@ public class UserService {
         }
         return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
     }
+    public ResponseEntity<FindUsernameDTO> getUserName(String email){
+        try {
+            FindUsernameDTO userName=new FindUsernameDTO();
+                   userName.setName(userDao.getUserName(email));
+           return new ResponseEntity<>(userName,HttpStatus.OK) ;
+        }catch (Exception e){
+//            return HelpfulUtils.getResponseEntity("Could not find Username",HttpStatus.BAD_REQUEST);
+            return null;
+        }
+    }
 
 
     private String extractToken(String authorizationHeader) {

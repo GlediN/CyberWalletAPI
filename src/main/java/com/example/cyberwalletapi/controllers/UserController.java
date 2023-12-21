@@ -1,9 +1,6 @@
 package com.example.cyberwalletapi.controllers;
 
-import com.example.cyberwalletapi.dto.FindTransactionsDTO;
-import com.example.cyberwalletapi.dto.LoginRequest;
-import com.example.cyberwalletapi.dto.SignUpRequest;
-import com.example.cyberwalletapi.dto.TransactionResponseDTO;
+import com.example.cyberwalletapi.dto.*;
 import com.example.cyberwalletapi.services.UserService;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +54,16 @@ public class UserController {
             e.printStackTrace();
         }
 //        return HelpfulUtils.getResponseEntity(HelpfulUtils.UNAUTHORIZED_ACCESS,HttpStatus.FORBIDDEN);
+        return null;
+    }
+    @PostMapping(path = "/getUsername")
+    public ResponseEntity<FindUsernameDTO>getUserName(@RequestBody FindTransactionsDTO findTransactionsDTO){
+        try {
+            return userService.getUserName(findTransactionsDTO.getEmail());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+//    return HelpfulUtils.getResponseEntity("Not found",HttpStatus.BAD_REQUEST);
         return null;
     }
 }

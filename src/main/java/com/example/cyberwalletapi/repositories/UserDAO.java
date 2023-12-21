@@ -1,5 +1,6 @@
 package com.example.cyberwalletapi.repositories;
 
+import com.example.cyberwalletapi.dto.FindUsernameDTO;
 import com.example.cyberwalletapi.entities.User;
 import com.example.cyberwalletapi.entities.UserTransaction;
 import jakarta.transaction.Transactional;
@@ -22,5 +23,7 @@ public interface UserDAO extends JpaRepository<User,Integer> {
     @Query("select ut from UserTransaction ut where ut.userID.id=:userID")
     List<UserTransaction> getLatestTransactions(@Param("userID") String email);
 
+    @Query("select u.name from User u where u.email =:email")
+    String getUserName(@Param("email")String email);
 
 }
