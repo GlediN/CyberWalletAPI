@@ -133,6 +133,18 @@ public class UserService {
             return null;
         }
     }
+    public ResponseEntity<FindBalanceResponse> getUserBalance(String email){
+        try {
+            FindBalanceResponse userBalance=new FindBalanceResponse();
+            Double balance= userDao.selectUserBalance(email);
+            userBalance.setBalance(balance);
+            return new ResponseEntity<>(userBalance,HttpStatus.OK) ;
+        }catch (Exception e){
+//            return HelpfulUtils.getResponseEntity("Could not find Username",HttpStatus.BAD_REQUEST);
+            return null;
+        }
+    }
+
 
 
     private String extractToken(String authorizationHeader) {
@@ -142,7 +154,6 @@ public class UserService {
         }
         return null;
     }
-
     private Claims validateAndParseToken(String token) {
         // Validate and parse the JWT token
         try {

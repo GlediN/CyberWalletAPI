@@ -57,6 +57,16 @@ public class UserController {
 //    return HelpfulUtils.getResponseEntity("Not found",HttpStatus.BAD_REQUEST);
         return null;
     }
+    @PostMapping(path = "/getBalance")
+    public ResponseEntity<FindBalanceResponse>getBalance(@RequestBody FindTransactionsDTO findTransactionsDTO){
+        try {
+            return userService.getUserBalance(findTransactionsDTO.getEmail());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+//    return HelpfulUtils.getResponseEntity("Not found",HttpStatus.BAD_REQUEST);
+        return null;
+    }
     @PostMapping(path = "/isAdmin")
     public boolean isAdmin(@RequestBody FindTransactionsDTO findTransactionsDTO){
         return userService.isUserAdmin(findTransactionsDTO);

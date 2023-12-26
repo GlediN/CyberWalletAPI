@@ -1,5 +1,6 @@
 package com.example.cyberwalletapi.repositories;
 
+import com.example.cyberwalletapi.dto.FindBalanceResponse;
 import com.example.cyberwalletapi.dto.FindUsernameDTO;
 import com.example.cyberwalletapi.entities.User;
 import com.example.cyberwalletapi.entities.UserTransaction;
@@ -24,7 +25,6 @@ public interface UserDAO extends JpaRepository<User,Integer> {
     List<UserTransaction> getLatestTransactions(@Param("userID") String email);
     @Query("select  ut from UserTransaction ut ")
     List<UserTransaction> getAllTransactions(@Param("userID") String email);
-
     @Query("select u.name from User u where u.email =:email")
     String getUserName(@Param("email")String email);
     @Query("select u.role from User u where u.email=:email")
