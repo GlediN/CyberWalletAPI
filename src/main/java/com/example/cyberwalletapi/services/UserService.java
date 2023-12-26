@@ -117,32 +117,11 @@ public class UserService {
         return user;
     }
 
-    public ResponseEntity<List<TransactionResponseDTO>> getRecentOrders(FindTransactionsDTO findTransactionsDTO) {
-        List<TransactionResponseDTO> transactionResponseDTOList = new ArrayList<>();
-        try {
-            User user = userDao.findByEmailId(findTransactionsDTO.getEmail());
-            List<UserTransaction> userTransactions = userDao.getLatestTransactions(user.getId());
-
-            if (userTransactions != null && !userTransactions.isEmpty()) {
-                for (UserTransaction userTransaction : userTransactions) {
-                    TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
-                    transactionResponseDTO.setDescription(userTransaction.getDescription());
-                    transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
-                    transactionResponseDTO.setRecipient(userTransaction.getRecipient());
-                    transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
-                    transactionResponseDTO.setId(userTransaction.getId());
-
-                    transactionResponseDTOList.add(transactionResponseDTO);
-                }
-
-                return new ResponseEntity<>(transactionResponseDTOList, HttpStatus.OK);
-            } else {
-                return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
+    public boolean isUserAdmin( FindTransactionsDTO findTransactionsDTO){
+        String userRole= userDao.isAdmin(findTransactionsDTO.getEmail());
+        if (userRole=="ADMIN"){
+            return true;
+        }else return false;
     }
     public ResponseEntity<FindUsernameDTO> getUserName(String email){
         try {

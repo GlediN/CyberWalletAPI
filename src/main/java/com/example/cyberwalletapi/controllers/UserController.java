@@ -46,16 +46,7 @@ public class UserController {
         }
         return HelpfulUtils.getResponseEntity(HelpfulUtils.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    @PostMapping(path = "/getRecentTransactions")
-    public ResponseEntity<List<TransactionResponseDTO>> recentTransactions(@RequestBody FindTransactionsDTO findTransactionsDTO){
-        try {
-            return userService.getRecentOrders(findTransactionsDTO);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-//        return HelpfulUtils.getResponseEntity(HelpfulUtils.UNAUTHORIZED_ACCESS,HttpStatus.FORBIDDEN);
-        return null;
-    }
+
     @PostMapping(path = "/getUsername")
     public ResponseEntity<FindUsernameDTO>getUserName(@RequestBody FindTransactionsDTO findTransactionsDTO){
         try {
@@ -65,5 +56,9 @@ public class UserController {
         }
 //    return HelpfulUtils.getResponseEntity("Not found",HttpStatus.BAD_REQUEST);
         return null;
+    }
+    @PostMapping(path = "/isAdmin")
+    public boolean isAdmin(@RequestBody FindTransactionsDTO findTransactionsDTO){
+        return userService.isUserAdmin(findTransactionsDTO);
     }
 }

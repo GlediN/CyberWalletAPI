@@ -1,6 +1,8 @@
 package com.example.cyberwalletapi.services;
 
+import com.example.cyberwalletapi.dto.FindTransactionsDTO;
 import com.example.cyberwalletapi.dto.TransactionRequest;
+import com.example.cyberwalletapi.dto.TransactionResponseDTO;
 import com.example.cyberwalletapi.dto.UserDataDTO;
 import com.example.cyberwalletapi.entities.User;
 import com.example.cyberwalletapi.entities.UserTransaction;
@@ -18,6 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -113,6 +118,71 @@ public class UserTransactionService {
     private void updateBalance(TransactionRequest transactionRequest) {
         userDAO.updateBalanceByEmail(transactionRequest.getAmount(), transactionRequest.getEmail());
 
-    }}
+    }
+
+    public ResponseEntity<List<TransactionResponseDTO>> getRecentOrders(FindTransactionsDTO findTransactionsDTO) {
+        List<TransactionResponseDTO> transactionResponseDTOList = new ArrayList<>();
+        try {
+            User user = userDAO.findByEmailId(findTransactionsDTO.getEmail());
+            List<UserTransaction> userTransactions = userDAO.getLatestTransactions(user.getId());
+
+            if (userTransactions != null && !userTransactions.isEmpty()) {
+                for (UserTransaction userTransaction : userTransactions) {
+                    TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
+                    transactionResponseDTO.setDescription(userTransaction.getDescription());
+                    transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
+                    transactionResponseDTO.setRecipient(userTransaction.getRecipient());
+                    transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
+                    transactionResponseDTO.setId(userTransaction.getId());
+
+                    transactionResponseDTOList.add(transactionResponseDTO);
+                }
+
+                return new ResponseEntity<>(transactionResponseDTOList, HttpStatus.OK);
+            } else {
+                return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
+    }
+
+    public ResponseEntity<List<TransactionResponseDTO>> getAllRecentOrders(FindTransactionsDTO findTransactionsDTO,String authorizationHeader) {
+        List<TransactionResponseDTO> transactionResponseDTOList = new ArrayList<>();
+        try {
+            List<UserTransaction> userTransactions = userDAO.getAllTransactions(findTransactionsDTO.getEmail());
+            String userRole = userDAO.isAdmin(findTransactionsDTO.getEmail());
+            String token = extractToken(authorizationHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            // Check if the subject claim matches the email in the TransactionRequest
+            if (claims != null && claims.getSubject().equals(findTransactionsDTO.getEmail())) {
+                if (userRole == "ADMIN") {
+                    if (userTransactions != null && !userTransactions.isEmpty()) {
+                        for (UserTransaction userTransaction : userTransactions) {
+                            TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
+                            transactionResponseDTO.setDescription(userTransaction.getDescription());
+                            transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
+                            transactionResponseDTO.setRecipient(userTransaction.getRecipient());
+                            transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
+                            transactionResponseDTO.setId(userTransaction.getId());
+
+                            transactionResponseDTOList.add(transactionResponseDTO);
+                        }
+
+                        return new ResponseEntity<>(transactionResponseDTOList, HttpStatus.OK);
+                    } else {
+                        return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
+                    }
+                }
+                return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.UNAUTHORIZED);
+    }
+}
 
 

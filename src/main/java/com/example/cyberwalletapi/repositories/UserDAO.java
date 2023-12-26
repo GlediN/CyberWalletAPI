@@ -22,8 +22,11 @@ public interface UserDAO extends JpaRepository<User,Integer> {
     void updateBalanceByEmail(@Param("amount") Double amount,@Param("email")String email);
     @Query("select ut from UserTransaction ut where ut.userID.id=:userID")
     List<UserTransaction> getLatestTransactions(@Param("userID") String email);
+    @Query("select  ut from UserTransaction ut ")
+    List<UserTransaction> getAllTransactions(@Param("userID") String email);
 
     @Query("select u.name from User u where u.email =:email")
     String getUserName(@Param("email")String email);
-
+    @Query("select u.role from User u where u.email=:email")
+    String isAdmin(@Param("email")String email);
 }
