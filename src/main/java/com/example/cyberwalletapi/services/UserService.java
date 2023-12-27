@@ -18,12 +18,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -34,7 +33,6 @@ public class UserService {
     private final PasswordEncoder bcryptPasswordEncoder;
     private final String secret = System.getenv("SECRET_KEY_FINALPROJECT");
     private static final Logger logger = Logger.getLogger(UserService.class.getName());
-
 
 
     public ResponseEntity<String> signUp(SignUpRequest signUpRequest) {
@@ -125,25 +123,26 @@ public class UserService {
     }
     public ResponseEntity<FindUsernameDTO> getUserName(String email){
         try {
-            FindUsernameDTO userName=new FindUsernameDTO();
-                   userName.setName(userDao.getUserName(email));
-           return new ResponseEntity<>(userName,HttpStatus.OK) ;
-        }catch (Exception e){
+            FindUsernameDTO userName = new FindUsernameDTO();
+            userName.setName(userDao.getUserName(email));
+            return new ResponseEntity<>(userName, HttpStatus.OK);
+        } catch (Exception e) {
 //            return HelpfulUtils.getResponseEntity("Could not find Username",HttpStatus.BAD_REQUEST);
             return null;
         }
     }
-    public ResponseEntity<FindBalanceResponse> getUserBalance(String email){
+    public ResponseEntity<FindBalanceResponse> getUserBalance(String email) {
         try {
-            FindBalanceResponse userBalance=new FindBalanceResponse();
-            Double balance= userDao.selectUserBalance(email);
+            FindBalanceResponse userBalance = new FindBalanceResponse();
+            Double balance = userDao.selectUserBalance(email);
             userBalance.setBalance(balance);
-            return new ResponseEntity<>(userBalance,HttpStatus.OK) ;
-        }catch (Exception e){
+            return new ResponseEntity<>(userBalance, HttpStatus.OK);
+        } catch (Exception e) {
 //            return HelpfulUtils.getResponseEntity("Could not find Username",HttpStatus.BAD_REQUEST);
             return null;
         }
     }
+
 
 
 
@@ -154,6 +153,7 @@ public class UserService {
         }
         return null;
     }
+
     private Claims validateAndParseToken(String token) {
         // Validate and parse the JWT token
         try {
