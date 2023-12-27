@@ -52,24 +52,25 @@ public class DepositCodesService {
 
             String userRole = userDAO.isAdmin(claims.getSubject());
             if (claims != null) {
-                if (userRole == "ADMIN") {
+//                if (userRole == "ADMIN") {
                     GiftCardResponseDTO giftCardResponseDTO = new GiftCardResponseDTO();
                     String giftCardCode = generateGiftCardCode();
                     DepositCodes depositCodes = new DepositCodes();
                     depositCodes.setCode(giftCardCode);
-                    depositCodes.setAmount(25.0);
+                    depositCodes.setAmount(25);
                     depositDAO.save(depositCodes);
-                    giftCardResponseDTO.setAmount(depositCodes.getAmount());
+                    giftCardResponseDTO.setAmount((int) depositCodes.getAmount());
                     giftCardResponseDTO.setCode(depositCodes.getCode());
                     return new ResponseEntity<>(giftCardResponseDTO, HttpStatus.OK);
+
                 }
-            }
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
-
+    @Transactional
     public ResponseEntity<ApiResponse<GiftCardResponseDTO>>
     useGiftCardCode(GiftCardResponseDTO giftCardResponseDTO, String authHeader) {
         try {
@@ -82,8 +83,10 @@ public class DepositCodesService {
                 if (claims != null) {
                     if (giftCardResponseDTO.getAmount() == depositCodes.getAmount()) {
                         User user = userDAO.findByEmailId(claims.getSubject());
-                        user.setBalance(Double.valueOf(depositDAO.updateBalanceByCode(depositCodes.getAmount())));
-                        // Your success response, assuming GiftCardResponseDTO is populated appropriately
+                        Double userBalance=userDAO.selectUserBalance(claims.getSubject());
+                        Double updatedBalance=userBalance+depositCodes.getAmount();
+                        depositDAO.updateBalanceByCode(updatedBalance, claims.getSubject());
+                        depositDAO.deleteCodeAfterUse(depositCodes.getCode());
                         return ResponseEntity.ok(ApiResponse.success(giftCardResponseDTO));
                     } else {
                         // Amount mismatch

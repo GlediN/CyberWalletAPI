@@ -28,7 +28,6 @@ public class DepositCodeController {
     (@RequestBody GiftCardResponseDTO giftCardResponseDTO,@RequestHeader ("Authorization") String token){
         try {
             return depositCodesService.useGiftCardCode(giftCardResponseDTO,token);
-
         }catch (Exception e){
             e.printStackTrace();
         }

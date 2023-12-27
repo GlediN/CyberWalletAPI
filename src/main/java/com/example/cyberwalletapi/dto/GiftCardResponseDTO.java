@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class GiftCardResponseDTO {
     private String code;
-    private Double amount;
+    private int amount;
 }

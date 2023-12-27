@@ -14,6 +14,6 @@ public class DepositCodes {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    private Double amount;
+    private int amount;
     private String code;
 }
