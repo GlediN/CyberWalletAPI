@@ -42,7 +42,7 @@ public class UserTransactionService {
             Claims claims = validateAndParseToken(token);
             // Check if the subject claim matches the email in the TransactionRequest
             if (claims != null && claims.getSubject().equals(transactionRequest.getEmail())) {
-                User userTransaction = userTransactionDAO.findByEmailId(transactionRequest.getEmail());
+                User userTransaction = userDAO.findByEmailId(transactionRequest.getEmail());
                 if (selectBalance(transactionRequest)) {
                     userTransactionDAO.save(getTransactionFromTransactionRequest(transactionRequest));
                     updateBalance(transactionRequest);

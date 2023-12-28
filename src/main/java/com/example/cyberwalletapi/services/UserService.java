@@ -1,8 +1,8 @@
 package com.example.cyberwalletapi.services;
 
 import com.example.cyberwalletapi.dto.*;
+import com.example.cyberwalletapi.dto.AccountChange.*;
 import com.example.cyberwalletapi.entities.User;
-import com.example.cyberwalletapi.entities.UserTransaction;
 import com.example.cyberwalletapi.enums.Roles;
 import com.example.cyberwalletapi.jwt.CustomerUserDetailsService;
 import com.example.cyberwalletapi.jwt.JwtUtil;
@@ -75,20 +75,6 @@ public class UserService {
         return new ResponseEntity<>("{\"message\":\"Bad Credentials.\"}", HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<UserDataDTO> getUserFromEmail(String email) {
-        try {
-            User user = (userDao.findByEmailId(email));
-            UserDataDTO userDataDTO = new UserDataDTO();
-            userDataDTO.setEmail(user.getEmail());
-            userDataDTO.setAddress(user.getAddress());
-            userDataDTO.setName(user.getName());
-            return new ResponseEntity<>(userDataDTO, HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     public ResponseEntity<String> checkToken() {
         try {
             return HelpfulUtils.getResponseEntity("true", HttpStatus.OK);
@@ -115,13 +101,18 @@ public class UserService {
         return user;
     }
 
-    public boolean isUserAdmin( FindTransactionsDTO findTransactionsDTO){
-        String userRole= userDao.isAdmin(findTransactionsDTO.getEmail());
-        if (userRole=="ADMIN"){
-            return true;
-        }else return false;
+    public boolean isUserAdmin(FindTransactionsDTO findTransactionsDTO) {
+        String userRole = userDao.isAdmin(findTransactionsDTO.getEmail());
+        return userRole == "ADMIN";
     }
-    public ResponseEntity<FindUsernameDTO> getUserName(String email){
+
+    public boolean isUserAdminString(String string) {
+        String userRole = userDao.isAdmin(string);
+        if (userRole == "ADMIN") {
+            return true;
+        } else return false;
+    }
+    public ResponseEntity<FindUsernameDTO> getUserName(String email) {
         try {
             FindUsernameDTO userName = new FindUsernameDTO();
             userName.setName(userDao.getUserName(email));
@@ -131,6 +122,7 @@ public class UserService {
             return null;
         }
     }
+
     public ResponseEntity<FindBalanceResponse> getUserBalance(String email) {
         try {
             FindBalanceResponse userBalance = new FindBalanceResponse();
@@ -144,6 +136,133 @@ public class UserService {
     }
 
 
+    private boolean areEmailsValid(String oldEmail, String newEmail) {
+        User user=userDao.findByEmailId(oldEmail);
+        if (oldEmail!=null){
+            if (user.getEmail()!=null){
+                    return true;
+                }
+            }
+        return false;
+        }
+
+    public ResponseEntity<String> updateUserEmail(String authHeader,EmailChangeRequestDTO emailChangeRequestDTO) {
+        try {
+            // Extract token from Authorization header
+            String token = extractToken(authHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            boolean isUserAdmin = isUserAdminString(claims.getSubject());
+            if (isUserAdmin) {
+                if (areEmailsValid(emailChangeRequestDTO.getOldEmail(),emailChangeRequestDTO.getNewEmail())) {
+                    userDao.updateUserEmail(emailChangeRequestDTO.getNewEmail(),emailChangeRequestDTO.getOldEmail());
+                    return new ResponseEntity<>("email changed", HttpStatus.OK);
+                } else return HelpfulUtils.getResponseEntity("Error changing email", HttpStatus.BAD_REQUEST);
+            } else HelpfulUtils.getResponseEntity("User is not a admin", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> updateUserBalance(String authHeader, BalanceChangeRequestDTO balanceChangeRequestDTO) {
+        try {
+            // Extract token from Authorization header
+            String token = extractToken(authHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            boolean isUserAdmin = isUserAdminString(claims.getSubject());
+            if (isUserAdmin) {
+                if (balanceChangeRequestDTO.getBalance() != null) {
+                    userDao.updateUserBalance(balanceChangeRequestDTO.getBalance(), balanceChangeRequestDTO.getEmail());
+                    return new ResponseEntity<>("Balance changed", HttpStatus.OK);
+                } else return new ResponseEntity<>("Balance could not be changed", HttpStatus.BAD_REQUEST);
+            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    public ResponseEntity<String> updateUserName(String authHeader, NameChangeRequestDTO nameChangeRequestDTO) {
+        try {
+            // Extract token from Authorization header
+            String token = extractToken(authHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            boolean isUserAdmin = isUserAdminString(claims.getSubject());
+            if (isUserAdmin) {
+                if (nameChangeRequestDTO.getName() != null) {
+                    userDao.updateUserName(nameChangeRequestDTO.getName(), nameChangeRequestDTO.getEmail());
+                    return new ResponseEntity<>("Name changed", HttpStatus.OK);
+                }
+            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    public ResponseEntity<String> updateUserPassword(String authHeader, PasswordChangeRequestDTO passwordChangeRequestDTO) {
+        try {
+            // Extract token from Authorization header
+            String token = extractToken(authHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            boolean isUserAdmin = isUserAdminString(claims.getSubject());
+            if (isUserAdmin) {
+                if (passwordChangeRequestDTO.getEmail() != null) {
+                    String newPassword = passwordChangeRequestDTO.getPassword();
+                    User user=userDao.findByEmailId(passwordChangeRequestDTO.getEmail());
+                    user.setPassword(newPassword);
+                    userDao.updateUserPassword(user.getPassword(), passwordChangeRequestDTO.getEmail());
+                    return new ResponseEntity<>("Password updated",HttpStatus.OK);
+                }
+            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<String> updateUserAddress(String authHeader, AddressChangeRequestDTO addressChangeRequestDTO) {
+        try {
+            // Extract token from Authorization header
+            String token = extractToken(authHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            boolean isUserAdmin = isUserAdminString(claims.getSubject());
+            if (isUserAdmin) {
+                if (addressChangeRequestDTO.getEmail() != null) {
+                    if (addressChangeRequestDTO.getAddress()!=""){
+                        userDao.updateUserAddress(addressChangeRequestDTO.getAddress(),addressChangeRequestDTO.getEmail());
+                    return new ResponseEntity<>("Address updated",HttpStatus.OK);
+                }else return HelpfulUtils.getResponseEntity("Address is empty",HttpStatus.BAD_REQUEST);
+                }
+            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    public ResponseEntity<String> updateUserRole(String authHeader, RoleChangeRequestDTO roleChangeRequestDTO){
+        try {
+
+            String token = extractToken(authHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            boolean isUserAdmin = isUserAdminString(claims.getSubject());
+            if (isUserAdmin) {
+                if (roleChangeRequestDTO.getEmail() != null) {
+                    if (roleChangeRequestDTO.getRole()!=null){
+                        userDao.updateUserRole(roleChangeRequestDTO.getRole(),roleChangeRequestDTO.getEmail());
+                        return new ResponseEntity<>("Role updated",HttpStatus.OK);
+                    }else return HelpfulUtils.getResponseEntity("Role is empty",HttpStatus.BAD_REQUEST);
+                }
+            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
 
     private String extractToken(String authorizationHeader) {
