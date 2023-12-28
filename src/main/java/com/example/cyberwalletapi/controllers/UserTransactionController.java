@@ -3,6 +3,7 @@ package com.example.cyberwalletapi.controllers;
 import com.example.cyberwalletapi.dto.FindTransactionsDTO;
 import com.example.cyberwalletapi.dto.TransactionRequest;
 import com.example.cyberwalletapi.dto.TransactionResponseDTO;
+import com.example.cyberwalletapi.dto.WithdrawAmountDTO;
 import com.example.cyberwalletapi.services.UserTransactionService;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,16 @@ public class UserTransactionController {
         }
 //        return HelpfulUtils.getResponseEntity(HelpfulUtils.UNAUTHORIZED_ACCESS,HttpStatus.FORBIDDEN);
         return null;
+    }
+    @PostMapping(path = "/api/withdraw")
+    public ResponseEntity<String>withdraw(@RequestBody WithdrawAmountDTO withdrawAmountDTO,@RequestHeader("Authorization") String token){
+        try {
+            userTransactionService.withdraw(token, withdrawAmountDTO.getAmount());
+        }catch (Exception e){
+            e.printStackTrace();
+            return HelpfulUtils.getResponseEntity("An error has ocurred",HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    return null;
     }
 
 }

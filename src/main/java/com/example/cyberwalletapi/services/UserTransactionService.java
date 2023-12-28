@@ -1,7 +1,9 @@
 package com.example.cyberwalletapi.services;
 
-import com.example.cyberwalletapi.dto.*;
-import com.example.cyberwalletapi.entities.DepositCodes;
+import com.example.cyberwalletapi.dto.FindTransactionsDTO;
+import com.example.cyberwalletapi.dto.TransactionRequest;
+import com.example.cyberwalletapi.dto.TransactionResponseDTO;
+import com.example.cyberwalletapi.dto.UserDataDTO;
 import com.example.cyberwalletapi.entities.User;
 import com.example.cyberwalletapi.entities.UserTransaction;
 import com.example.cyberwalletapi.repositories.UserDAO;
@@ -10,9 +12,6 @@ import com.example.cyberwalletapi.utils.HelpfulUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,6 +181,28 @@ public class UserTransactionService {
             e.printStackTrace();
         }
         return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.UNAUTHORIZED);
+    }
+
+    public ResponseEntity<String>withdraw(String authHeader,Double amount){
+        try {
+            String token = extractToken(authHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            if (claims != null) {
+                User user = userDAO.findByEmailId(claims.getSubject());
+                Double userBalance = userDAO.selectUserBalance(user.getEmail());
+                if (userBalance>=amount){
+                Double updatedBalance = userBalance - amount;
+                userTransactionDAO.withdrawFromUser(updatedBalance,user.getEmail());
+                return HelpfulUtils.getResponseEntity("Funds withdrew",HttpStatus.OK);
+            }else {
+                    return HelpfulUtils.getResponseEntity("Withdraw amount  is more than avalible balance",HttpStatus.BAD_REQUEST);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    return HelpfulUtils.getResponseEntity("An error has occured",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 
