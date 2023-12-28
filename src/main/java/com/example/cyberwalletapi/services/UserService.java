@@ -7,6 +7,7 @@ import com.example.cyberwalletapi.enums.Roles;
 import com.example.cyberwalletapi.jwt.CustomerUserDetailsService;
 import com.example.cyberwalletapi.jwt.JwtUtil;
 import com.example.cyberwalletapi.repositories.UserDAO;
+import com.example.cyberwalletapi.utils.ApiResponse;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -183,7 +184,7 @@ public class UserService {
         }
         return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    public ResponseEntity<String> updateUserName(String authHeader, NameChangeRequestDTO nameChangeRequestDTO) {
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserName(String authHeader, NameChangeRequestDTO nameChangeRequestDTO) {
         try {
             // Extract token from Authorization header
             String token = extractToken(authHeader);
@@ -193,13 +194,15 @@ public class UserService {
             if (isUserAdmin) {
                 if (nameChangeRequestDTO.getName() != null) {
                     userDao.updateUserName(nameChangeRequestDTO.getName(), nameChangeRequestDTO.getEmail());
-                    return new ResponseEntity<>("Name changed", HttpStatus.OK);
+                    AccountChangeResponseDTO accountChangeResponseDTO=new AccountChangeResponseDTO();
+                    accountChangeResponseDTO.setMessage(nameChangeRequestDTO.getName());
+                    return ResponseEntity.ok(ApiResponse.success(accountChangeResponseDTO));
                 }
-            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+            } else return ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
     public ResponseEntity<String> updateUserPassword(String authHeader, PasswordChangeRequestDTO passwordChangeRequestDTO) {
         try {

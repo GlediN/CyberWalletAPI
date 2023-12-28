@@ -1,8 +1,8 @@
 package com.example.cyberwalletapi.controllers;
 
 import com.example.cyberwalletapi.dto.AccountChange.*;
-import com.example.cyberwalletapi.dto.FindTransactionsDTO;
 import com.example.cyberwalletapi.services.UserService;
+import com.example.cyberwalletapi.utils.ApiResponse;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,13 +16,13 @@ public class AdminController {
     private final UserService userService;
 
     @PostMapping(path = "/admin/changeUsername")
-    public ResponseEntity<String>changeUsername(@RequestBody NameChangeRequestDTO nameChangeRequestDTO, @RequestHeader("Authorization")String token){
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> changeUsername(@RequestBody NameChangeRequestDTO nameChangeRequestDTO, @RequestHeader("Authorization")String token){
         try {
             return userService.updateUserName(token, nameChangeRequestDTO);
         }catch (Exception e){
             e.printStackTrace();
         }
-    return HelpfulUtils.getResponseEntity("Error",HttpStatus.BAD_REQUEST);
+    return null;
     }
     @PostMapping(path = "/admin/changeEmail")
     public ResponseEntity<String>changeEmail(@RequestBody EmailChangeRequestDTO nameChangeRequestDTO, @RequestHeader("Authorization")String token){
