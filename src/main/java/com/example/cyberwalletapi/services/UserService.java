@@ -3,6 +3,7 @@ package com.example.cyberwalletapi.services;
 import com.example.cyberwalletapi.dto.*;
 import com.example.cyberwalletapi.dto.AccountChange.*;
 import com.example.cyberwalletapi.entities.User;
+import com.example.cyberwalletapi.entities.UserTransaction;
 import com.example.cyberwalletapi.enums.Roles;
 import com.example.cyberwalletapi.jwt.CustomerUserDetailsService;
 import com.example.cyberwalletapi.jwt.JwtUtil;
@@ -147,7 +148,7 @@ public class UserService {
         return false;
         }
 
-    public ResponseEntity<String> updateUserEmail(String authHeader,EmailChangeRequestDTO emailChangeRequestDTO) {
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserEmail(String authHeader,EmailChangeRequestDTO emailChangeRequestDTO) {
         try {
             // Extract token from Authorization header
             String token = extractToken(authHeader);
@@ -157,16 +158,18 @@ public class UserService {
             if (isUserAdmin) {
                 if (areEmailsValid(emailChangeRequestDTO.getOldEmail(),emailChangeRequestDTO.getNewEmail())) {
                     userDao.updateUserEmail(emailChangeRequestDTO.getNewEmail(),emailChangeRequestDTO.getOldEmail());
-                    return new ResponseEntity<>("email changed", HttpStatus.OK);
-                } else return HelpfulUtils.getResponseEntity("Error changing email", HttpStatus.BAD_REQUEST);
+                    AccountChangeResponseDTO accountChangeResponseDTO=new AccountChangeResponseDTO();
+                    accountChangeResponseDTO.setMessage(emailChangeRequestDTO.getNewEmail());
+                    return ResponseEntity.ok(ApiResponse.success(accountChangeResponseDTO));
+                } else ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
             } else HelpfulUtils.getResponseEntity("User is not a admin", HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
 
-    public ResponseEntity<String> updateUserBalance(String authHeader, BalanceChangeRequestDTO balanceChangeRequestDTO) {
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserBalance(String authHeader, BalanceChangeRequestDTO balanceChangeRequestDTO) {
         try {
             // Extract token from Authorization header
             String token = extractToken(authHeader);
@@ -176,13 +179,15 @@ public class UserService {
             if (isUserAdmin) {
                 if (balanceChangeRequestDTO.getBalance() != null) {
                     userDao.updateUserBalance(balanceChangeRequestDTO.getBalance(), balanceChangeRequestDTO.getEmail());
-                    return new ResponseEntity<>("Balance changed", HttpStatus.OK);
-                } else return new ResponseEntity<>("Balance could not be changed", HttpStatus.BAD_REQUEST);
-            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+                    AccountChangeResponseDTO accountChangeResponseDTO=new AccountChangeResponseDTO();
+                    accountChangeResponseDTO.setMessage(balanceChangeRequestDTO.getEmail());
+                    return ResponseEntity.ok(ApiResponse.success(accountChangeResponseDTO));
+                } else ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
+            } else HelpfulUtils.getResponseEntity("User is not a admin", HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
     public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserName(String authHeader, NameChangeRequestDTO nameChangeRequestDTO) {
         try {
@@ -204,7 +209,7 @@ public class UserService {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
-    public ResponseEntity<String> updateUserPassword(String authHeader, PasswordChangeRequestDTO passwordChangeRequestDTO) {
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserPassword(String authHeader, PasswordChangeRequestDTO passwordChangeRequestDTO) {
         try {
             // Extract token from Authorization header
             String token = extractToken(authHeader);
@@ -217,16 +222,18 @@ public class UserService {
                     User user=userDao.findByEmailId(passwordChangeRequestDTO.getEmail());
                     user.setPassword(newPassword);
                     userDao.updateUserPassword(user.getPassword(), passwordChangeRequestDTO.getEmail());
-                    return new ResponseEntity<>("Password updated",HttpStatus.OK);
+                    AccountChangeResponseDTO accountChangeResponseDTO=new AccountChangeResponseDTO();
+                    accountChangeResponseDTO.setMessage(passwordChangeRequestDTO.getEmail());
+                    return ResponseEntity.ok(ApiResponse.success(accountChangeResponseDTO));
                 }
-            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+            } else return ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
 
-    public ResponseEntity<String> updateUserAddress(String authHeader, AddressChangeRequestDTO addressChangeRequestDTO) {
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserAddress(String authHeader, AddressChangeRequestDTO addressChangeRequestDTO) {
         try {
             // Extract token from Authorization header
             String token = extractToken(authHeader);
@@ -237,16 +244,18 @@ public class UserService {
                 if (addressChangeRequestDTO.getEmail() != null) {
                     if (addressChangeRequestDTO.getAddress()!=""){
                         userDao.updateUserAddress(addressChangeRequestDTO.getAddress(),addressChangeRequestDTO.getEmail());
-                    return new ResponseEntity<>("Address updated",HttpStatus.OK);
-                }else return HelpfulUtils.getResponseEntity("Address is empty",HttpStatus.BAD_REQUEST);
+                        AccountChangeResponseDTO accountChangeResponseDTO=new AccountChangeResponseDTO();
+                        accountChangeResponseDTO.setMessage(addressChangeRequestDTO.getAddress());
+                        return ResponseEntity.ok(ApiResponse.success(accountChangeResponseDTO));
+                }else return ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
                 }
-            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+            } else return ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
-    public ResponseEntity<String> updateUserRole(String authHeader, RoleChangeRequestDTO roleChangeRequestDTO){
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserRole(String authHeader, RoleChangeRequestDTO roleChangeRequestDTO){
         try {
 
             String token = extractToken(authHeader);
@@ -256,18 +265,57 @@ public class UserService {
             if (isUserAdmin) {
                 if (roleChangeRequestDTO.getEmail() != null) {
                     if (roleChangeRequestDTO.getRole()!=null){
+                        if (isRoleValid(String.valueOf(roleChangeRequestDTO.getRole()))){
                         userDao.updateUserRole(roleChangeRequestDTO.getRole(),roleChangeRequestDTO.getEmail());
-                        return new ResponseEntity<>("Role updated",HttpStatus.OK);
-                    }else return HelpfulUtils.getResponseEntity("Role is empty",HttpStatus.BAD_REQUEST);
+                        AccountChangeResponseDTO accountChangeResponseDTO=new AccountChangeResponseDTO();
+                        accountChangeResponseDTO.setMessage(roleChangeRequestDTO.getEmail());
+                        return ResponseEntity.ok(ApiResponse.success(accountChangeResponseDTO));
+                    }else return ResponseEntity.badRequest().body(ApiResponse.error("Role doesnt exist"));
+                    }else return ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
                 }
-            } else return new ResponseEntity<>("User is not admin", HttpStatus.UNAUTHORIZED);
+            } else return ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity("Error happened", HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
 
+    private boolean isRoleValid(String role){
+        if (role=="ADMIN"||role=="USER"){
+            return true;
+        }else return false;
+    }
 
+    public ResponseEntity<ApiResponse<List<User>>> getAllUsers(String authHeader){
+        try {
+
+            String token = extractToken(authHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            boolean isUserAdmin = isUserAdminString(claims.getSubject());
+            if (isUserAdmin) {
+                List<User>userResponseList=new ArrayList<>();
+                List<User>users=userDao.getAllUsers();
+                if (users != null && !users.isEmpty()) {
+                    for (User user : users) {
+                        User userResponseDTO = new User();
+                        userResponseDTO.setId(user.getId());
+                        userResponseDTO.setName(user.getName());
+                        userResponseDTO.setRole(user.getRole());
+                        userResponseDTO.setAddress(user.getAddress());
+                        userResponseDTO.setBalance(user.getBalance());
+                        userResponseDTO.setEmail(user.getEmail());
+                        userResponseDTO.setDateOfRegister(user.getDateOfRegister());
+                        userResponseList.add(userResponseDTO);
+                    }
+                    return ResponseEntity.ok(ApiResponse.success(userResponseList));
+                }return ResponseEntity.ok().body(ApiResponse.error("There arent any users"));
+            } else return ResponseEntity.badRequest().body(ApiResponse.error("Amount mismatch"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
+    }
     private String extractToken(String authorizationHeader) {
         // Extract Bearer token from Authorization header
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {

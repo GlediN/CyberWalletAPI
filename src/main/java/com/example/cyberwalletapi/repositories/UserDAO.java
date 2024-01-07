@@ -57,4 +57,6 @@ public interface UserDAO extends JpaRepository<User,Integer> {
     @Query("update User u set u.role = :newRole where u.email = :email")
     void updateUserRole(@Param("newRole")Roles roles,@Param("email")String email);
 
+    @Query("select u from User u")
+    List<User>getAllUsers();
 }

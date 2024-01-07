@@ -1,6 +1,7 @@
 package com.example.cyberwalletapi.controllers;
 
 import com.example.cyberwalletapi.dto.AccountChange.*;
+import com.example.cyberwalletapi.entities.User;
 import com.example.cyberwalletapi.services.UserService;
 import com.example.cyberwalletapi.utils.ApiResponse;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -25,26 +28,26 @@ public class AdminController {
     return null;
     }
     @PostMapping(path = "/admin/changeEmail")
-    public ResponseEntity<String>changeEmail(@RequestBody EmailChangeRequestDTO nameChangeRequestDTO, @RequestHeader("Authorization")String token){
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> changeEmail(@RequestBody EmailChangeRequestDTO nameChangeRequestDTO, @RequestHeader("Authorization")String token){
         try {
             return userService.updateUserEmail(token, nameChangeRequestDTO);
         }catch (Exception e){
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity("Error",HttpStatus.BAD_REQUEST);
+        return null;
     }
     @PostMapping(path = "/admin/changeBalance")
-    public ResponseEntity<String>changeBalance(@RequestBody BalanceChangeRequestDTO balanceChangeRequestDTO, @RequestHeader("Authorization")String token){
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> changeBalance(@RequestBody BalanceChangeRequestDTO balanceChangeRequestDTO, @RequestHeader("Authorization")String token){
         try {
             return userService.updateUserBalance(token, balanceChangeRequestDTO);
         }catch (Exception e){
             e.printStackTrace();
         }
-        return HelpfulUtils.getResponseEntity("Error",HttpStatus.BAD_REQUEST);
+        return null;
     }
 
     @PostMapping(path = "/admin/changePassword")
-    public ResponseEntity<String>changePassword(@RequestBody PasswordChangeRequestDTO passwordChangeRequestDTO, @RequestHeader("Authorization")String token){
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>>changePassword(@RequestBody PasswordChangeRequestDTO passwordChangeRequestDTO, @RequestHeader("Authorization")String token){
         try {
             return userService.updateUserPassword(token, passwordChangeRequestDTO);
         }catch (Exception e){
@@ -54,7 +57,7 @@ public class AdminController {
     }
 
     @PostMapping(path = "/admin/changeAddress")
-    public ResponseEntity<String>changeAddress(@RequestBody AddressChangeRequestDTO addressChangeRequestDTO, @RequestHeader("Authorization")String token){
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>>changeAddress(@RequestBody AddressChangeRequestDTO addressChangeRequestDTO, @RequestHeader("Authorization")String token){
         try {
             return userService.updateUserAddress(token, addressChangeRequestDTO);
         }catch (Exception e){
@@ -63,9 +66,18 @@ public class AdminController {
         return null;
     }
     @PostMapping(path = "/admin/changeRole")
-    public ResponseEntity<String>changeRole(@RequestBody RoleChangeRequestDTO roleChangeRequestDTO, @RequestHeader("Authorization")String token){
+    public ResponseEntity<ApiResponse<AccountChangeResponseDTO>>changeRole(@RequestBody RoleChangeRequestDTO roleChangeRequestDTO, @RequestHeader("Authorization")String token){
         try {
             return userService.updateUserRole(token, roleChangeRequestDTO);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    @PostMapping(path = "/admin/getAllUsers")
+    public ResponseEntity<ApiResponse<List<User>>>getAllUsers(@RequestHeader("Authorization")String token){
+        try {
+            return userService.getAllUsers(token);
         }catch (Exception e){
             e.printStackTrace();
         }
