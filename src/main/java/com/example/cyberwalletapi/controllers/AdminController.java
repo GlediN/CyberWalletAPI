@@ -1,8 +1,12 @@
 package com.example.cyberwalletapi.controllers;
 
 import com.example.cyberwalletapi.dto.AccountChange.*;
+import com.example.cyberwalletapi.dto.TransactionDateDTO;
+import com.example.cyberwalletapi.dto.TransactionResponseDTO;
 import com.example.cyberwalletapi.entities.User;
+import com.example.cyberwalletapi.entities.UserTransaction;
 import com.example.cyberwalletapi.services.UserService;
+import com.example.cyberwalletapi.services.UserTransactionService;
 import com.example.cyberwalletapi.utils.ApiResponse;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
     private final UserService userService;
+    private final UserTransactionService userTransactionService;
 
     @PostMapping(path = "/admin/changeUsername")
     public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> changeUsername(@RequestBody NameChangeRequestDTO nameChangeRequestDTO, @RequestHeader("Authorization")String token){
@@ -78,6 +83,15 @@ public class AdminController {
     public ResponseEntity<ApiResponse<List<User>>>getAllUsers(@RequestHeader("Authorization")String token){
         try {
             return userService.getAllUsers(token);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    @PostMapping(path = "/admin/getTransactionsByDate")
+    public ResponseEntity<List<TransactionResponseDTO>>getTransactionsByDate(@RequestHeader("Authorization")String token, @RequestBody TransactionDateDTO transactionDateDTO){
+        try {
+            return userTransactionService.getOrdersByDate(transactionDateDTO,token);
         }catch (Exception e){
             e.printStackTrace();
         }

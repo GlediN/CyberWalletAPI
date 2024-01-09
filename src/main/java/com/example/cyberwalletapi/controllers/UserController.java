@@ -21,7 +21,6 @@ public class UserController {
         try {
 
             userService.signUp(signUpRequest);
-            return HelpfulUtils.getResponseEntity("Account created successfully", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
         }

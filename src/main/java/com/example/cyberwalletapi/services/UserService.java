@@ -40,21 +40,22 @@ public class UserService {
     public ResponseEntity<String> signUp(SignUpRequest signUpRequest) {
         try {
             if (validateSignUpRequest(signUpRequest)) {
-                User user = userDao.findByEmailId(signUpRequest.getEmail());
-                if (Objects.isNull(user)) {
+                User existingUser = userDao.findByEmailId(signUpRequest.getEmail());
+                if (existingUser != null) {
+                    return HelpfulUtils.getResponseEntity("Email already exists", HttpStatus.BAD_REQUEST);
+                } else if (Objects.equals(existingUser.getEmail(), signUpRequest.getEmail())){
                     userDao.save(getUserFromSignUpRequest(signUpRequest));
                     return HelpfulUtils.getResponseEntity("Successfully Registered", HttpStatus.OK);
-                } else {
-                    return HelpfulUtils.getResponseEntity("Email already exists", HttpStatus.BAD_REQUEST);
-                }
+                }else return HelpfulUtils.getResponseEntity(HelpfulUtils.INVALID_DATA,HttpStatus.BAD_REQUEST);
             } else {
                 return HelpfulUtils.getResponseEntity(HelpfulUtils.INVALID_DATA, HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return HelpfulUtils.getResponseEntity(HelpfulUtils.INVALID_DATA, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return HelpfulUtils.getResponseEntity(HelpfulUtils.INVALID_DATA, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
 
     public ResponseEntity<String> login(LoginRequest loginRequest) {
         try {
@@ -316,6 +317,8 @@ public class UserService {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
+
+
     private String extractToken(String authorizationHeader) {
         // Extract Bearer token from Authorization header
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
@@ -323,6 +326,8 @@ public class UserService {
         }
         return null;
     }
+
+
 
     private Claims validateAndParseToken(String token) {
         // Validate and parse the JWT token

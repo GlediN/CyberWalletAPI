@@ -1,13 +1,11 @@
 package com.example.cyberwalletapi.services;
 
-import com.example.cyberwalletapi.dto.FindTransactionsDTO;
-import com.example.cyberwalletapi.dto.TransactionRequest;
-import com.example.cyberwalletapi.dto.TransactionResponseDTO;
-import com.example.cyberwalletapi.dto.UserDataDTO;
+import com.example.cyberwalletapi.dto.*;
 import com.example.cyberwalletapi.entities.User;
 import com.example.cyberwalletapi.entities.UserTransaction;
 import com.example.cyberwalletapi.repositories.UserDAO;
 import com.example.cyberwalletapi.repositories.UserTransactionDAO;
+import com.example.cyberwalletapi.utils.ApiResponse;
 import com.example.cyberwalletapi.utils.HelpfulUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
@@ -177,6 +175,41 @@ public class UserTransactionService {
                 }
                 return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
             }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.UNAUTHORIZED);
+    }
+
+    public ResponseEntity<List<TransactionResponseDTO>> getOrdersByDate(TransactionDateDTO transactionDateDTO, String authorizationHeader) {
+        List<TransactionResponseDTO> transactionResponseDTOList = new ArrayList<>();
+        try {
+            LocalDateTime date = LocalDateTime.parse(transactionDateDTO.getDate() + "T00:00:00");
+            LocalDateTime endDate = date.plusDays(1);
+            List<UserTransaction> userTransactions = userTransactionDAO.getTransactionsByDate(date,endDate);
+            String token = extractToken(authorizationHeader);
+            // Validate and parse the token
+            Claims claims = validateAndParseToken(token);
+            // Check if the subject claim matches the email in the TransactionRequest
+            if (claims != null) {
+                    if (userTransactions != null && !userTransactions.isEmpty()) {
+                        for (UserTransaction userTransaction : userTransactions) {
+                            TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
+                            transactionResponseDTO.setDescription(userTransaction.getDescription());
+                            transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
+                            transactionResponseDTO.setRecipient(userTransaction.getRecipient());
+                            transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
+                            transactionResponseDTO.setId(userTransaction.getId());
+
+                            transactionResponseDTOList.add(transactionResponseDTO);
+                        }
+
+                        return new ResponseEntity<>(transactionResponseDTOList, HttpStatus.OK);
+                    } else {
+                        return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
+                    }
+                }
+                return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
         }catch(Exception e){
             e.printStackTrace();
         }
