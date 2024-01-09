@@ -43,10 +43,8 @@ public class UserService {
                 User existingUser = userDao.findByEmailId(signUpRequest.getEmail());
                 if (existingUser != null) {
                     return HelpfulUtils.getResponseEntity("Email already exists", HttpStatus.BAD_REQUEST);
-                } else if (Objects.equals(existingUser.getEmail(), signUpRequest.getEmail())){
-                    userDao.save(getUserFromSignUpRequest(signUpRequest));
+                } else userDao.save(getUserFromSignUpRequest(signUpRequest));
                     return HelpfulUtils.getResponseEntity("Successfully Registered", HttpStatus.OK);
-                }else return HelpfulUtils.getResponseEntity(HelpfulUtils.INVALID_DATA,HttpStatus.BAD_REQUEST);
             } else {
                 return HelpfulUtils.getResponseEntity(HelpfulUtils.INVALID_DATA, HttpStatus.BAD_REQUEST);
             }
