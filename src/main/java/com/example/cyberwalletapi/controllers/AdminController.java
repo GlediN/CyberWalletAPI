@@ -23,6 +23,8 @@ public class AdminController {
     private final UserService userService;
     private final UserTransactionService userTransactionService;
 
+    //This is the controller where the admin can change all the user details
+
     @PostMapping(path = "/admin/changeUsername")
     public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> changeUsername(@RequestBody NameChangeRequestDTO nameChangeRequestDTO, @RequestHeader("Authorization")String token){
         try {

@@ -106,15 +106,16 @@ public class UserService {
 
     public boolean isUserAdmin(FindTransactionsDTO findTransactionsDTO) {
         String userRole = userDao.isAdmin(findTransactionsDTO.getEmail());
-        return userRole == "ADMIN";
+        return Objects.equals(userRole, "ADMIN");
     }
-
+    //Method for showing user role on login
     public boolean isUserAdminString(String string) {
         String userRole = userDao.isAdmin(string);
         if (userRole == "ADMIN") {
             return true;
         } else return false;
     }
+    //Method for showing user balance on login made by gledi
     public ResponseEntity<FindUsernameDTO> getUserName(String email) {
         try {
             FindUsernameDTO userName = new FindUsernameDTO();
@@ -126,6 +127,7 @@ public class UserService {
         }
     }
 
+        //Method for showing user balance on login made by gledi
     public ResponseEntity<FindBalanceResponse> getUserBalance(String email) {
         try {
             FindBalanceResponse userBalance = new FindBalanceResponse();
@@ -138,17 +140,23 @@ public class UserService {
         }
     }
 
-
-    private boolean areEmailsValid(String oldEmail, String newEmail) {
-        User user=userDao.findByEmailId(oldEmail);
-        if (oldEmail!=null){
-            if (user.getEmail()!=null){
-                    return true;
-                }
-            }
-        return false;
+    private String extractToken(String authorizationHeader) {
+        // Extract Bearer token from Authorization header
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
         }
+        return null;
+    }
+    private Claims validateAndParseToken(String token) {
+        // Validate and parse the JWT token
+        try {
+            return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
+        //Below here are the admin methods where you can change the user details
     public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserEmail(String authHeader,EmailChangeRequestDTO emailChangeRequestDTO) {
         try {
             // Extract token from Authorization header
@@ -168,6 +176,16 @@ public class UserService {
             e.printStackTrace();
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
+    }
+
+    private boolean areEmailsValid(String oldEmail, String newEmail) {
+        User user=userDao.findByEmailId(oldEmail);
+        if (oldEmail!=null){
+            if (user.getEmail()!=null){
+                return true;
+            }
+        }
+        return false;
     }
 
     public ResponseEntity<ApiResponse<AccountChangeResponseDTO>> updateUserBalance(String authHeader, BalanceChangeRequestDTO balanceChangeRequestDTO) {
@@ -317,25 +335,4 @@ public class UserService {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error("Internal Server Error"));
     }
-
-
-    private String extractToken(String authorizationHeader) {
-        // Extract Bearer token from Authorization header
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        }
-        return null;
-    }
-
-
-
-    private Claims validateAndParseToken(String token) {
-        // Validate and parse the JWT token
-        try {
-            return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
 }
