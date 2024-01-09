@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface UserTransactionDAO extends JpaRepository<UserTransaction,Integer> {
     @Query("select u from User u where u.email=:email")
-    boolean findByEmailId(@Param("email") String email);
+    User findByEmailId(@Param("email") String email);
     @Modifying
     @Transactional
     @Query("update User u set u.balance=:amount where u.email=:email")

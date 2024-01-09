@@ -22,6 +22,10 @@ public interface UserDAO extends JpaRepository<User,Integer> {
     @Transactional
     @Query("UPDATE User u SET u.balance = u.balance-:amount WHERE u.email = :email")
     void updateBalanceByEmail(@Param("amount") Double amount,@Param("email")String email);
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.balance = u.balance+:amount WHERE u.email = :email")
+    void updateSenderBalanceByEmail(@Param("amount") Double amount,@Param("email")String email);
     @Query("select ut from UserTransaction ut where ut.userID.id=:userID")
     List<UserTransaction> getLatestTransactions(@Param("userID") String email);
     @Query("select  ut from UserTransaction ut ")

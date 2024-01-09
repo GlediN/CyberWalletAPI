@@ -42,6 +42,9 @@ public class UserTransactionService {
             if (claims != null && claims.getSubject().equals(transactionRequest.getEmail())) {
                 User userTransaction = userDAO.findByEmailId(transactionRequest.getEmail());
                 if (selectBalance(transactionRequest)) {
+                    if (updateRecipientBalance(transactionRequest)) {
+                        userDAO.updateSenderBalanceByEmail(transactionRequest.getAmount(), transactionRequest.getRecipient());
+                    }
                     userTransactionDAO.save(getTransactionFromTransactionRequest(transactionRequest));
                     updateBalance(transactionRequest);
                 }
@@ -112,7 +115,21 @@ public class UserTransactionService {
         return false;
     }
 
+    private boolean updateRecipientBalance(TransactionRequest transactionRequest) {
+        try {
+            User doesRecipentExist = userTransactionDAO.findByEmailId(transactionRequest.getRecipient());
+            if (doesRecipentExist.getEmail() != null) {
+                return true;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     private void updateBalance(TransactionRequest transactionRequest) {
+
         userDAO.updateBalanceByEmail(transactionRequest.getAmount(), transactionRequest.getEmail());
 
     }
@@ -145,7 +162,7 @@ public class UserTransactionService {
         return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
     }
 
-    public ResponseEntity<List<TransactionResponseDTO>> getAllRecentOrders(FindTransactionsDTO findTransactionsDTO,String authorizationHeader) {
+    public ResponseEntity<List<TransactionResponseDTO>> getAllRecentOrders(FindTransactionsDTO findTransactionsDTO, String authorizationHeader) {
         List<TransactionResponseDTO> transactionResponseDTOList = new ArrayList<>();
         try {
             List<UserTransaction> userTransactions = userDAO.getAllTransactions(findTransactionsDTO.getEmail());
@@ -175,7 +192,7 @@ public class UserTransactionService {
                 }
                 return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.UNAUTHORIZED);
@@ -186,37 +203,37 @@ public class UserTransactionService {
         try {
             LocalDateTime date = LocalDateTime.parse(transactionDateDTO.getDate() + "T00:00:00");
             LocalDateTime endDate = date.plusDays(1);
-            List<UserTransaction> userTransactions = userTransactionDAO.getTransactionsByDate(date,endDate);
+            List<UserTransaction> userTransactions = userTransactionDAO.getTransactionsByDate(date, endDate);
             String token = extractToken(authorizationHeader);
             // Validate and parse the token
             Claims claims = validateAndParseToken(token);
             // Check if the subject claim matches the email in the TransactionRequest
             if (claims != null) {
-                    if (userTransactions != null && !userTransactions.isEmpty()) {
-                        for (UserTransaction userTransaction : userTransactions) {
-                            TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
-                            transactionResponseDTO.setDescription(userTransaction.getDescription());
-                            transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
-                            transactionResponseDTO.setRecipient(userTransaction.getRecipient());
-                            transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
-                            transactionResponseDTO.setId(userTransaction.getId());
+                if (userTransactions != null && !userTransactions.isEmpty()) {
+                    for (UserTransaction userTransaction : userTransactions) {
+                        TransactionResponseDTO transactionResponseDTO = new TransactionResponseDTO();
+                        transactionResponseDTO.setDescription(userTransaction.getDescription());
+                        transactionResponseDTO.setAmount(String.valueOf(userTransaction.getAmount()));
+                        transactionResponseDTO.setRecipient(userTransaction.getRecipient());
+                        transactionResponseDTO.setDateOfTransaction(userTransaction.getDateOfTransaction());
+                        transactionResponseDTO.setId(userTransaction.getId());
 
-                            transactionResponseDTOList.add(transactionResponseDTO);
-                        }
-
-                        return new ResponseEntity<>(transactionResponseDTOList, HttpStatus.OK);
-                    } else {
-                        return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
+                        transactionResponseDTOList.add(transactionResponseDTO);
                     }
+
+                    return new ResponseEntity<>(transactionResponseDTOList, HttpStatus.OK);
+                } else {
+                    return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
                 }
-                return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
-        }catch(Exception e){
+            }
+            return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return HelpfulUtils.getResponseEntity1(transactionResponseDTOList, HttpStatus.UNAUTHORIZED);
     }
 
-    public ResponseEntity<String>withdraw(String authHeader,Double amount){
+    public ResponseEntity<String> withdraw(String authHeader, Double amount) {
         try {
             String token = extractToken(authHeader);
             // Validate and parse the token
@@ -224,18 +241,18 @@ public class UserTransactionService {
             if (claims != null) {
                 User user = userDAO.findByEmailId(claims.getSubject());
                 Double userBalance = userDAO.selectUserBalance(user.getEmail());
-                if (userBalance>=amount){
-                Double updatedBalance = userBalance - amount;
-                userTransactionDAO.withdrawFromUser(updatedBalance,user.getEmail());
-                return HelpfulUtils.getResponseEntity("Funds withdrew",HttpStatus.OK);
-            }else {
-                    return HelpfulUtils.getResponseEntity("Withdraw amount  is more than avalible balance",HttpStatus.BAD_REQUEST);
+                if (userBalance >= amount) {
+                    Double updatedBalance = userBalance - amount;
+                    userTransactionDAO.withdrawFromUser(updatedBalance, user.getEmail());
+                    return HelpfulUtils.getResponseEntity("Funds withdrew", HttpStatus.OK);
+                } else {
+                    return HelpfulUtils.getResponseEntity("Withdraw amount  is more than avalible balance", HttpStatus.BAD_REQUEST);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    return HelpfulUtils.getResponseEntity("An error has occured",HttpStatus.INTERNAL_SERVER_ERROR);
+        return HelpfulUtils.getResponseEntity("An error has occured", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 
