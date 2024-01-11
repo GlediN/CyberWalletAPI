@@ -61,12 +61,10 @@ public class UserTransactionController {
     @PostMapping(path = "/api/withdraw")
     public ResponseEntity<String>withdraw(@RequestBody WithdrawAmountDTO withdrawAmountDTO,@RequestHeader("Authorization") String token){
         try {
-            userTransactionService.withdraw(token, withdrawAmountDTO.getAmount());
+           return userTransactionService.withdraw(token, withdrawAmountDTO.getAmount());
         }catch (Exception e){
             e.printStackTrace();
             return HelpfulUtils.getResponseEntity("An error has ocurred",HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    return null;
-    }
-
+}
 }

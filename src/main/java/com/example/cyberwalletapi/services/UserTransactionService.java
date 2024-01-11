@@ -41,6 +41,7 @@ public class UserTransactionService {
             // Check if the subject claim matches the email in the TransactionRequest
             if (claims != null && claims.getSubject().equals(transactionRequest.getEmail())) {
                 User userTransaction = userDAO.findByEmailId(transactionRequest.getEmail());
+                if (userTransaction.getBalance()>= transactionRequest.getAmount()){
                 if (selectBalance(transactionRequest)) {
                     if (updateRecipientBalance(transactionRequest)) {
                         userDAO.updateSenderBalanceByEmail(transactionRequest.getAmount(), transactionRequest.getRecipient());
@@ -49,6 +50,7 @@ public class UserTransactionService {
                     updateBalance(transactionRequest);
                 }
                 return HelpfulUtils.getResponseEntity("Transaction Saved", HttpStatus.OK);
+            }else return HelpfulUtils.getResponseEntity("Not enough balance",HttpStatus.BAD_REQUEST);
             } else {
                 return HelpfulUtils.getResponseEntity("Unauthorized", HttpStatus.UNAUTHORIZED);
             }
@@ -241,7 +243,7 @@ public class UserTransactionService {
             if (claims != null) {
                 User user = userDAO.findByEmailId(claims.getSubject());
                 Double userBalance = userDAO.selectUserBalance(user.getEmail());
-                if (userBalance >= amount) {
+                if (userBalance>=amount) {
                     Double updatedBalance = userBalance - amount;
                     userTransactionDAO.withdrawFromUser(updatedBalance, user.getEmail());
                     return HelpfulUtils.getResponseEntity("Funds withdrew", HttpStatus.OK);
